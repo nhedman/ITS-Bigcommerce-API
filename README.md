@@ -1,7 +1,7 @@
 ITS-Bigcommerce-API
 ================================
 Library for connecting to the OAuth Bigcommerce API
-```
+
 Require the file in your script as follows:
 ```
 require 'connection.php';
