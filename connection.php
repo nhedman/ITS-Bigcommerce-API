@@ -1,8 +1,9 @@
 <?php
 /**
- *Class to instantiate different api connections
+ *Class to instantiate different Bigcommerce API connections under the new OAuth scheme
  * 
  * @author Adam Bilsing <adambilsing@gmail.com>
+ * @author Nathaniel Hedman <nhedman@intuitsolutions.net>
  */
 class Connection
 {
@@ -126,9 +127,12 @@ class Connection
 	 * @param $resource string $resource a string to perform get on
 	 * @return results or var_dump error
 	 */
-	public function get($resource) {
+	public function get($resource, $filter = null) {
 
 		$url = 'https://api.bigcommerce.com/stores/' . $this->_hash . '/v2/' . $resource;
+		if ( $filter ) {
+			$url .= $filter;
+		}
 
 		$curl = curl_init();
 		curl_setopt($curl, CURLOPT_URL, $url);
