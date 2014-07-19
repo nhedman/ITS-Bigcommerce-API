@@ -16,16 +16,33 @@ class Connection
 	static private $_token;
 	static private $_headers;
 
+
+	/**
+	 * Sets $_hash, $_client, $_token, $_headers upon class instantiation
+	 * 
+	 * @param $clientId, $storeHash, $token required for the class
+	 * @return void
+	 */
+	public function __construct($clientId, $storeHash, $token) {
+		$this->_hash = $storeHash;
+		$this->_client = $clientId;
+		$this->_token = $token;
+
+		$clientHeaderString = 'X-Auth-Client: ' . $this->_client;
+		$tokenHeaderString = 'X-Auth-Token: ' . $this->_token;
+		$this->_headers = array($tokenHeaderString, $clientHeaderString, 'Accept: application/json','Content-Type: application/json');
+
+	}
+
+
 	/**
 	 * Performs POST request to Bc API for response to Auth Callback Request
 	 * 
 	 * Accepts app credentials and grant information
 	 *
 	 * @param $client_id, $client_secret, $redirect_uri, $code, $scope, $context required for granting auth_token
-	 * @return object
+	 * @return stdClass with fields properties access_token, scope, user (user.id, user.username, user.email), context
 	 */
-
-
 	public static function getAccessToken($client_id, $client_secret, $redirect_uri, $code, $scope, $context)
 	{
 		$data = array(
@@ -47,30 +64,16 @@ class Connection
 		curl_setopt($ch, CURLOPT_POSTFIELDS, $postfields);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-		$output = curl_exec ($ch);
+		$response = curl_exec ($ch);
 		curl_close ($ch);
-
-		$obj = json_decode($output);
-		//has properties access_token, scope, user (user.id, user.username, user.email), context
-		return $obj;
+		$http_status = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+		if ($http_status == 200) {
+			$results = json_decode($response);
+			return $results;
+		} else {
+			return false;
+		}
 	}
-
-	/**
-	 * Sets $_hash, $_client, $_token, $_headers upon class instantiation
-	 * 
-	 * @param $clientId, $storeHash, $token required for the class
-	 * @return void
-	 */
-	public function __construct($clientId, $storeHash, $token) {
-		$this->_hash = $storeHash;
-		$this->_client = $clientId;
-		$this->_token = $token;
-
-		$clientHeaderString = 'X-Auth-Client: ' . $this->_client;
-		$tokenHeaderString = 'X-Auth-Token: ' . $this->_token;
-		$this->_headers = array($tokenHeaderString, $clientHeaderString, 'Accept: application/json','Content-Type: application/json');
-
-	}	
 
 
 	public static function http_parse_headers( $header )
@@ -87,8 +90,13 @@ class Connection
                 }
             }
         }
-        if ($retVal['X-Retry-After'] > 0) {
-        	sleep($retVal['X-Retry-After']);
+        return $retVal;
+    }
+
+    public function rate_limit( $headers )
+    {
+    	if ($headers['X-Retry-After'] > 0) {
+        	sleep($headers['X-Retry-After']);
         }
     }
 
@@ -135,7 +143,8 @@ class Connection
 		$header_size = curl_getinfo($curl, CURLINFO_HEADER_SIZE);
 		$headers = substr($response, 0, $header_size);
 		$body = substr($response, $header_size);
-		self::http_parse_headers($headers);
+		$headersArray = self::http_parse_headers($headers);
+		$this->rate_limit($headersArray);
 		curl_close ($curl);
 		if ($http_status == 200) {
 			$results = json_decode($body, true);
@@ -175,7 +184,8 @@ class Connection
 		$header_size = curl_getinfo($curl, CURLINFO_HEADER_SIZE);
 		$headers = substr($response, 0, $header_size);
 		$body = substr($response, $header_size);
-		self::http_parse_headers($headers);
+		$headersArray = self::http_parse_headers($headers);
+		$this->rate_limit($headersArray);
 		curl_close($curl);
 		if ($http_status == 200) {
 			$results = json_decode($body, true);
@@ -214,7 +224,8 @@ class Connection
 		$header_size = curl_getinfo($curl, CURLINFO_HEADER_SIZE);
 		$headers = substr($response, 0, $header_size);
 		$body = substr($response, $header_size);
-		self::http_parse_headers($headers);
+		$headersArray = self::http_parse_headers($headers);
+		$this->rate_limit($headersArray);
 		curl_close ($curl);
 		if ($http_status == 201) {
 			$results = json_decode($body, true);
@@ -249,7 +260,8 @@ class Connection
 		$header_size = curl_getinfo($curl, CURLINFO_HEADER_SIZE);
 		$headers = substr($response, 0, $header_size);
 		$body = substr($response, $header_size);
-		self::http_parse_headers($headers);	        
+		$headersArray = self::http_parse_headers($headers);
+		$this->rate_limit($headersArray);	        
 		curl_close ($curl);
 		if ($http_status == 204) {
 	     	return $http_status . ' DELETED';
