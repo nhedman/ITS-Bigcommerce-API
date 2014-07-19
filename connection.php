@@ -17,6 +17,45 @@ class connection
 	static private $_headers;
 
 	/**
+	 * Performs POST request to Bc API for response to Auth Callback Request
+	 * 
+	 * Accepts app credentials and grant information
+	 *
+	 * @param $client_id, $client_secret, $redirect_uri, $code, $scope, $context required for granting auth_token
+	 * @return object
+	 */
+
+
+	public static function getAccessToken($client_id, $client_secret, $redirect_uri, $code, $scope, $context)
+	{
+		$data = array(
+    		"client_id" => $client_id,
+    		"client_secret" => $client_secret,
+    		"redirect_uri" => $redirect_uri,
+    		"grant_type" => "authorization_code",
+    		"code" => $code,
+    		"scope" => $scope,
+    		"context" => $context,
+		);
+
+		$postfields = http_build_query($data);
+
+		$ch = curl_init();                     
+		$url = "https://login.bigcommerce.com/oauth2/token";
+		curl_setopt($ch, CURLOPT_URL,$url);
+		curl_setopt($ch, CURLOPT_POST, true);
+		curl_setopt($ch, CURLOPT_POSTFIELDS, $postfields);
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+		$output = curl_exec ($ch);
+		curl_close ($ch);
+
+		$obj = json_decode($output);
+		//has properties access_token, scope, user (user.id, user.username, user.email), context
+		return $obj;
+	}
+
+	/**
 	 * Sets $_hash, $_client, $_token, $_headers upon class instantiation
 	 * 
 	 * @param $clientId, $storeHash, $token required for the class
