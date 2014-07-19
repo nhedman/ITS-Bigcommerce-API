@@ -11,27 +11,25 @@ class connection
 	 *
 	 * @var string stores data for the class
 	 */
-	static public $_path;
-	static private $_user;
+	static public $_hash;
+	static private $_client;
 	static private $_token;
 	static private $_headers;
 
 	/**
-	 * Sets $_path, $_user, $_token, $_headers upon class instantiation
+	 * Sets $_hash, $_client, $_token, $_headers upon class instantiation
 	 * 
-	 * @param $user, $path, $token required for the class
+	 * @param $clientId, $storeHash, $token required for the class
 	 * @return void
 	 */
-	public function __construct($user, $path, $token) {
-		$path = explode('/api/v2/', $path);
-		$this->_path = $path[0];
-		$this->_user = $user;
+	public function __construct($clientId, $storeHash, $token) {
+		$this->_hash = $storeHash;
+		$this->_client = $clientId;
 		$this->_token = $token;
 
-		$encodedToken = base64_encode($this->_user.":".$this->_token);
-
-		$authHeaderString = 'Authorization: Basic ' . $encodedToken;
-		$this->_headers = array($authHeaderString, 'Accept: application/json','Content-Type: application/json');
+		$clientHeaderString = 'X-Auth-Client: ' . $this->_client;
+		$tokenHeaderString = 'X-Auth-Token: ' . $this->_token;
+		$this->_headers = array($tokenHeaderString, $clientHeaderString, 'Accept: application/json','Content-Type: application/json');
 
 	}	
 
@@ -50,8 +48,8 @@ class connection
                 }
             }
         }
-        if ($retVal['X-Bc-Apilimit-Remaining'] <= 100) {
-        	sleep(300);
+        if ($retVal['X-Retry-After'] > 0) {
+        	sleep($retVal['X-Retry-After']);
         }
     }
 
@@ -83,7 +81,7 @@ class connection
 	 */
 	public function get($resource) {
 
-		$url = $this->_path . '/api/v2' . $resource;
+		$url = 'https://api.bigcommerce.com/stores/' . $this->_hash . '/v2/' . $resource;
 
 		$curl = curl_init();
 		curl_setopt($curl, CURLOPT_URL, $url);
@@ -121,7 +119,7 @@ class connection
 	 */
 	public function put($resource, $fields) {
 			
-		$url = $this->_path . '/api/v2' . $resource;
+		$url = 'https://api.bigcommerce.com/stores/' . $this->_hash . '/v2/' . $resource;
 		$json = json_encode($fields);
 		
 		$curl = curl_init();
@@ -160,7 +158,7 @@ class connection
 	 */
 	public function post($resource, $fields) {
 		global $error;
-		$url = $this->_path . '/api/v2' . $resource;
+		$url = 'https://api.bigcommerce.com/stores/' . $this->_hash . '/v2/' . $resource;
 		$json = json_encode($fields);
 
 		$curl = curl_init();
@@ -197,7 +195,7 @@ class connection
 	 */
 	public function delete($resource) {
 			
-		$url = $this->_path . '/api/v2' . $resource;
+		$url = 'https://api.bigcommerce.com/stores/' . $this->_hash . '/v2/' . $resource;
 		
 		$curl = curl_init();
 		curl_setopt($curl, CURLOPT_URL, $url);
