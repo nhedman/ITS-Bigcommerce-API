@@ -4,7 +4,7 @@
  * 
  * @author Adam Bilsing <adambilsing@gmail.com>
  */
-class connection
+class Connection
 {
 	/**
 	 *public and private variables 
