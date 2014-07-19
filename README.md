@@ -1,18 +1,19 @@
-PHP-cURL-lib-for-Bigcommerce-API
+ITS-Bigcommerce-API
 ================================
-
+Library for connecting to the OAuth Bigcommerce API
+```
 Require the file in your script as follows:
 ```
 require 'connection.php';
 ```
 Instantiate connection class as such:
 ```
-$store = new connection('Username', 'API path', 'API token');
+$store = new connection('Client ID', 'Store Hash', 'Access Token');
 ```
 call various methods to the connection
 
 ```
-$store->get('RESOURCE');
+$store->get('RESOURCE', $filter = null);
 
 $store->delete('RESOURCE');
 
@@ -23,6 +24,4 @@ $store->put('RESOURCE', $fields);
 
 If the request fails the error details will be stored in the $error var.
 
-If the requests per hour limit reaches 100 or less the library will automatically take 5 minutes between requests in order to provide enough
-time for the requests to regenerate.  Once the request limit is above 100 the library will resume requests at a normal frequency.
-
+If the rate limit is reached, the function will sleep for the retry-after time, then retry.

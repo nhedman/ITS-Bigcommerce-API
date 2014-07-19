@@ -98,7 +98,9 @@ class Connection
     {
     	if ($headers['X-Retry-After'] > 0) {
         	sleep($headers['X-Retry-After']);
+        	return false;
         }
+        return true;
     }
 
     public function error($body, $url, $json, $type) {
@@ -148,7 +150,9 @@ class Connection
 		$headers = substr($response, 0, $header_size);
 		$body = substr($response, $header_size);
 		$headersArray = self::http_parse_headers($headers);
-		$this->rate_limit($headersArray);
+		if (! $this->rate_limit($headersArray) ) {
+			//retry
+		}
 		curl_close ($curl);
 		if ($http_status == 200) {
 			$results = json_decode($body, true);
@@ -189,7 +193,9 @@ class Connection
 		$headers = substr($response, 0, $header_size);
 		$body = substr($response, $header_size);
 		$headersArray = self::http_parse_headers($headers);
-		$this->rate_limit($headersArray);
+		if (! $this->rate_limit($headersArray) ) {
+			//retry
+		}
 		curl_close($curl);
 		if ($http_status == 200) {
 			$results = json_decode($body, true);
@@ -229,7 +235,9 @@ class Connection
 		$headers = substr($response, 0, $header_size);
 		$body = substr($response, $header_size);
 		$headersArray = self::http_parse_headers($headers);
-		$this->rate_limit($headersArray);
+		if (! $this->rate_limit($headersArray) ) {
+			//retry
+		}
 		curl_close ($curl);
 		if ($http_status == 201) {
 			$results = json_decode($body, true);
@@ -265,7 +273,9 @@ class Connection
 		$headers = substr($response, 0, $header_size);
 		$body = substr($response, $header_size);
 		$headersArray = self::http_parse_headers($headers);
-		$this->rate_limit($headersArray);	        
+		if (! $this->rate_limit($headersArray) ) {
+			//retry
+		}	        
 		curl_close ($curl);
 		if ($http_status == 204) {
 	     	return $http_status . ' DELETED';
