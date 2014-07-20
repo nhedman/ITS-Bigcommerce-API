@@ -16,6 +16,8 @@ class Connection
 	static private $_client;
 	static private $_token;
 	static private $_headers;
+	private $retries = 0;
+	const RETRY_ATTEMPTS = 5;
 
 
 	/**
@@ -100,6 +102,7 @@ class Connection
         	sleep($headers['X-Retry-After']);
         	return false;
         }
+        $this->retries = 0;
         return true;
     }
 
@@ -150,8 +153,9 @@ class Connection
 		$headers = substr($response, 0, $header_size);
 		$body = substr($response, $header_size);
 		$headersArray = self::http_parse_headers($headers);
-		if (! $this->rate_limit($headersArray) ) {
-			//retry
+		if (! $this->rate_limit($headersArray) && $this->retries < RETRY_ATTEMPTS) {
+			$this->retries = $this->retries + 1;
+			return $this->get($resource, $filter);
 		}
 		curl_close ($curl);
 		if ($http_status == 200) {
@@ -193,8 +197,9 @@ class Connection
 		$headers = substr($response, 0, $header_size);
 		$body = substr($response, $header_size);
 		$headersArray = self::http_parse_headers($headers);
-		if (! $this->rate_limit($headersArray) ) {
-			//retry
+		if (! $this->rate_limit($headersArray )  && $this->retries < RETRY_ATTEMPTS ) {
+			$this->retries = $this->retries + 1;
+			return $this->put($resource, $fields);
 		}
 		curl_close($curl);
 		if ($http_status == 200) {
@@ -235,8 +240,9 @@ class Connection
 		$headers = substr($response, 0, $header_size);
 		$body = substr($response, $header_size);
 		$headersArray = self::http_parse_headers($headers);
-		if (! $this->rate_limit($headersArray) ) {
-			//retry
+		if (! $this->rate_limit($headersArray)  && $this->retries < RETRY_ATTEMPTS ) {
+			$this->retries = $this->retries + 1;
+			return $this->post($resource, $fields);
 		}
 		curl_close ($curl);
 		if ($http_status == 201) {
@@ -273,8 +279,9 @@ class Connection
 		$headers = substr($response, 0, $header_size);
 		$body = substr($response, $header_size);
 		$headersArray = self::http_parse_headers($headers);
-		if (! $this->rate_limit($headersArray) ) {
-			//retry
+		if (! $this->rate_limit($headersArray)  && $this->retries < RETRY_ATTEMPTS) {
+			$this->retries = $this->retries + 1;
+			return $this->delete($resource);
 		}	        
 		curl_close ($curl);
 		if ($http_status == 204) {
