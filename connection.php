@@ -109,14 +109,14 @@ class Connection
     public function error($body, $url, $json, $type) {
     	global $error;
     	if (isset($json)) {
-	    	$results = json_decode($body, true);
+	    	$results = json_decode($body);
 			$results = $results[0];
 			$results['type'] = $type;
 			$results['url'] = $url;
 			$results['payload'] = $json;
 			$error = $results;
 		} else {
-			$results = json_decode($body, true);
+			$results = json_decode($body);
 			$results = $results[0];
 			$results['type'] = $type;
 			$results['url'] = $url;
@@ -159,7 +159,7 @@ class Connection
 		}
 		curl_close ($curl);
 		if ($http_status == 200) {
-			$results = json_decode($body, true);
+			$results = json_decode($body);
 			return $results;
 		} else {
 			$this->error($body, $url, null, 'GET');
@@ -203,7 +203,7 @@ class Connection
 		}
 		curl_close($curl);
 		if ($http_status == 200) {
-			$results = json_decode($body, true);
+			$results = json_decode($body);
 			return $results;
 		} else {
 			$this->error($body, $url, $json, 'PUT');
@@ -246,7 +246,7 @@ class Connection
 		}
 		curl_close ($curl);
 		if ($http_status == 201) {
-			$results = json_decode($body, true);
+			$results = json_decode($body);
 			return $results;
 		} else {
 			$this->error($body, $url, $json, 'POST');
