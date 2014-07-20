@@ -1,6 +1,6 @@
 ITS-Bigcommerce-API
 ================================
-Library for connecting to the OAuth Bigcommerce API
+Library for connecting to the OAuth Bigcommerce API. (IntuitSolutions')[http://www.intuitsolutions.net] fork of (PHP-cURL-lib-for-Bigcommerce-API) [https://github.com/adambilsing/PHP-cURL-lib-for-Bigcommerce-API] by Adam Bilsing, authored by Than Hedman.
 
 Require the file in your script as follows:
 ```
