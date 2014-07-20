@@ -136,7 +136,7 @@ class Connection
 
 		$url = 'https://api.bigcommerce.com/stores/' . $this->_hash . '/v2/' . $resource;
 		if ( $filter ) {
-			$url .= $filter;
+			$url .= '?' . $filter;
 		}
 
 		$curl = curl_init();
