@@ -138,13 +138,7 @@ class Connection
 
 		$url = 'https://api.bigcommerce.com/stores/' . $this->_hash . '/v2/' . $resource;
 		if ( $filter ) {
-			if (strpos($resource, '?') == strlen($resource) - 1) {
-				$url .= http_build_query($filter); 
-			} elseif (strpos($resource, '?')) {
-				$url .= '&' . http_build_query($filter);
-			} else {
-				$url .= '?' . http_build_query($filter);  
-			}
+			$url .= '?' . http_build_query($filter);
 		}
 
 		$curl = curl_init();
