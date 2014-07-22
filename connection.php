@@ -68,8 +68,9 @@ class Connection
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
 		$response = curl_exec ($ch);
+		$http_status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 		curl_close ($ch);
-		$http_status = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+		
 		if ($http_status == 200) {
 			$results = json_decode($response);
 			return $results;
@@ -97,31 +98,32 @@ class Connection
     }
 
     public function rate_limit( $headers )
-    {
-    	if ($headers['X-Retry-After'] > 0) {
-        	sleep($headers['X-Retry-After']);
-        	return false;
+    {	if ( isset($headers['X-Retry-After']) ) {
+    		if ($headers['X-Retry-After'] > 0) {
+        		sleep($headers['X-Retry-After']);
+        		return false;
+        	}
         }
         $this->retries = 0;
         return true;
     }
 
     public function error($body, $url, $json, $type) {
-    	global $error;
-    	if (isset($json)) {
-	    	$results = json_decode($body);
-			$results = $results[0];
-			$results['type'] = $type;
-			$results['url'] = $url;
-			$results['payload'] = $json;
-			$error = $results;
-		} else {
-			$results = json_decode($body);
-			$results = $results[0];
-			$results['type'] = $type;
-			$results['url'] = $url;
-			$error = $results;
-		}
+  //   	global $error;
+  //   	if (isset($json)) {
+	 //    	$results = json_decode($body);
+		// 	$results = $results[0];
+		// 	$results['type'] = $type;
+		// 	$results['url'] = $url;
+		// 	$results['payload'] = $json;
+		// 	$error = $results;
+		// } else {
+		// 	$results = json_decode($body);
+		// 	$results = $results[0];
+		// 	$results['type'] = $type;
+		// 	$results['url'] = $url;
+		// 	$error = $results;
+		// }
     }
 
 	/**
@@ -132,11 +134,17 @@ class Connection
 	 * @param $resource string $resource a string to perform get on
 	 * @return results or var_dump error
 	 */
-	public function get($resource, $filter = null) {
+	public function get($resource, array $filter = null) {
 
 		$url = 'https://api.bigcommerce.com/stores/' . $this->_hash . '/v2/' . $resource;
 		if ( $filter ) {
-			$url .= '?' . $filter;
+			if (strpos($resource, '?') == strlen($resource) - 1) {
+				$url .= http_build_query($filter); 
+			} elseif (strpos($resource, '?')) {
+				$url .= '&' . http_build_query($filter);
+			} else {
+				$url .= '?' . http_build_query($filter);  
+			}
 		}
 
 		$curl = curl_init();
@@ -153,7 +161,7 @@ class Connection
 		$headers = substr($response, 0, $header_size);
 		$body = substr($response, $header_size);
 		$headersArray = self::http_parse_headers($headers);
-		if (! $this->rate_limit($headersArray) && $this->retries < RETRY_ATTEMPTS) {
+		if (! $this->rate_limit($headersArray) && $this->retries < self::RETRY_ATTEMPTS) {
 			$this->retries = $this->retries + 1;
 			return $this->get($resource, $filter);
 		}
@@ -197,7 +205,7 @@ class Connection
 		$headers = substr($response, 0, $header_size);
 		$body = substr($response, $header_size);
 		$headersArray = self::http_parse_headers($headers);
-		if (! $this->rate_limit($headersArray )  && $this->retries < RETRY_ATTEMPTS ) {
+		if (! $this->rate_limit($headersArray )  && $this->retries < self::RETRY_ATTEMPTS ) {
 			$this->retries = $this->retries + 1;
 			return $this->put($resource, $fields);
 		}
@@ -240,7 +248,7 @@ class Connection
 		$headers = substr($response, 0, $header_size);
 		$body = substr($response, $header_size);
 		$headersArray = self::http_parse_headers($headers);
-		if (! $this->rate_limit($headersArray)  && $this->retries < RETRY_ATTEMPTS ) {
+		if (! $this->rate_limit($headersArray)  && $this->retries < self::RETRY_ATTEMPTS ) {
 			$this->retries = $this->retries + 1;
 			return $this->post($resource, $fields);
 		}
@@ -279,7 +287,7 @@ class Connection
 		$headers = substr($response, 0, $header_size);
 		$body = substr($response, $header_size);
 		$headersArray = self::http_parse_headers($headers);
-		if (! $this->rate_limit($headersArray)  && $this->retries < RETRY_ATTEMPTS) {
+		if (! $this->rate_limit($headersArray)  && $this->retries < self::RETRY_ATTEMPTS) {
 			$this->retries = $this->retries + 1;
 			return $this->delete($resource);
 		}	        
