@@ -34,7 +34,6 @@ class Connection
 		$clientHeaderString = 'X-Auth-Client: ' . $this->_client;
 		$tokenHeaderString = 'X-Auth-Token: ' . $this->_token;
 		$this->_headers = array($tokenHeaderString, $clientHeaderString, 'Accept: application/json','Content-Type: application/json');
-
 	}
 
 
@@ -109,21 +108,21 @@ class Connection
     }
 
     public function error($body, $url, $json, $type) {
-  //   	global $error;
-  //   	if (isset($json)) {
-	 //    	$results = json_decode($body);
-		// 	$results = $results[0];
-		// 	$results['type'] = $type;
-		// 	$results['url'] = $url;
-		// 	$results['payload'] = $json;
-		// 	$error = $results;
-		// } else {
-		// 	$results = json_decode($body);
-		// 	$results = $results[0];
-		// 	$results['type'] = $type;
-		// 	$results['url'] = $url;
-		// 	$error = $results;
-		// }
+    	global $error;
+    	if (isset($json)) {
+	    	$results = json_decode($body, true);
+			$results = $results[0];
+			$results['type'] = $type;
+			$results['url'] = $url;
+			$results['payload'] = $json;
+			$error = $results;
+		} else {
+			$results = json_decode($body, true);
+			$results = $results[0];
+			$results['type'] = $type;
+			$results['url'] = $url;
+			$error = $results;
+		}
     }
 
 	/**
