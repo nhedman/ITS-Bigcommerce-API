@@ -113,8 +113,8 @@ class Connection
 	 * 
 	 * Accepts signed request
 	 * 
-	 * @param $str1, $str2 strings for
-	 * @return stdClass with fields user.id, user.email, user.store_hash null if invalid
+	 * @param $signedRequest, get variable sent by Bigcommerce
+	 * @return stdClass with fields user.id, user.email, user.store_hash, null if invalid
 	 */
 
 	public static function verify($signedRequest) {
